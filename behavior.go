@@ -7,11 +7,16 @@ import (
 )
 
 type IBehavior interface {
+	GetName() string
 	Process(log *entity.Log)
 }
 
 type PrintBehavior struct {
 	//TODO: support log format
+}
+
+func (print *PrintBehavior) GetName() string {
+	return "default_print"
 }
 
 func (print *PrintBehavior) Process(log *entity.Log) {

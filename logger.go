@@ -1,27 +1,39 @@
 package gologger
 
 import (
+	"sync"
 	"time"
 
 	"github.com/tapvanvn/gologger/entity"
 )
 
 func NewLogger(agent string) *Logger {
+
 	return &Logger{
 		Agent:     agent,
-		behaviors: make([]IBehavior, 0),
+		behaviors: map[string]IBehavior{},
 	}
 }
 
 type Logger struct {
 	Agent     string
-	behaviors []IBehavior
+	behaviors map[string]IBehavior
+	mux       sync.Mutex
 }
 
 func (logger *Logger) AddBehavior(behave IBehavior) {
-	logger.behaviors = append(logger.behaviors, behave)
+	logger.mux.Lock()
+	defer logger.mux.Unlock()
+	logger.behaviors[behave.GetName()] = behave
 }
+func (logger *Logger) RemoveBehavior(behave IBehavior) {
+	logger.mux.Lock()
+	defer logger.mux.Unlock()
+	delete(logger.behaviors, behave.GetName())
+}
+
 func (logger *Logger) Log(pairs ...*entity.LogEvent) {
+
 	log := &entity.Log{
 		Agent:     logger.Agent,
 		Timestamp: time.Now().Unix(),
